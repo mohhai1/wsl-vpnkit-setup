@@ -1,6 +1,3 @@
-Here's a well-structured `README.md` template for your GitHub repository. This template includes sections for the problem statement, solution, and detailed steps to set up `wsl-vpnkit`.
-
-
 # Resolving WSL2 Internet Connectivity Issues When Using a VPN on Windows
 
 ## Problem Statement
