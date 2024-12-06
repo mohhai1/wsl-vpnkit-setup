@@ -1,3 +1,6 @@
+Here's a well-structured `README.md` template for your GitHub repository. This template includes sections for the problem statement, solution, and detailed steps to set up `wsl-vpnkit`.
+
+```markdown
 # Resolving WSL2 Internet Connectivity Issues When Using a VPN on Windows
 
 ## Problem Statement
@@ -16,45 +19,58 @@ To resolve this issue, we can use `wsl-vpnkit`, a tool that helps WSL2 work seam
    sudo mkdir -p /opt/wsl-vpnkit
    sudo tar --directory /opt/wsl-vpnkit --strip-components=1 -xf wsl-vpnkit.tar.gz
    sudo rm wsl-vpnkit.tar.gz
-Create the wsl-interop-env.sh Script:
+   ```
 
-sudo nano /etc/systemd/system/wsl-interop-env.sh
-Add the following content:
+2. **Create the `wsl-interop-env.sh` Script**:
+   ```bash
+   sudo nano /etc/systemd/system/wsl-interop-env.sh
+   ```
+   Add the following content:
+   ```bash
+   #!/bin/sh
+   export WSL_INTEROP=
+   for socket in $(ls /run/WSL | sort -n); do
+       if ss -elx | grep "$socket"; then
+           export WSL_INTEROP=/run/WSL/$socket
+       else
+           rm $socket
+       fi
+   done
+   ```
 
-#!/bin/sh
-export WSL_INTEROP=
-for socket in $(ls /run/WSL | sort -n); do
-    if ss -elx | grep "$socket"; then
-        export WSL_INTEROP=/run/WSL/$socket
-    else
-        rm $socket
-    fi
-done
-Make the Script Executable:
+3. **Make the Script Executable**:
+   ```bash
+   sudo chmod +x /etc/systemd/system/wsl-interop-env.sh
+   ```
 
-sudo chmod +x /etc/systemd/system/wsl-interop-env.sh
-Create the wsl-vpnkit.service File:
+4. **Create the `wsl-vpnkit.service` File**:
+   ```bash
+   sudo nano /etc/systemd/system/wsl-vpnkit.service
+   ```
+   Add the following content:
+   ```ini
+   [Unit]
+   Description=wsl-vpnkit
+   After=network.target
 
-sudo nano /etc/systemd/system/wsl-vpnkit.service
-Add the following content:
+   [Service]
+   Type=idle
+   ExecStart=/bin/sh -c '. /etc/systemd/system/wsl-interop-env.sh; /opt/wsl-vpnkit/wsl-vpnkit'
+   Environment=VMEXEC_PATH=/opt/wsl-vpnkit/wsl-vm
+   Environment=GVPROXY_PATH=/opt/wsl-vpnkit/wsl-gvproxy.exe
+   Restart=always
+   KillMode=mixed
 
-[Unit]
-Description=wsl-vpnkit
-After=network.target
+   [Install]
+   WantedBy=multi-user.target
+   ```
 
-[Service]
-Type=idle
-ExecStart=/bin/sh -c '. /etc/systemd/system/wsl-interop-env.sh; /opt/wsl-vpnkit/wsl-vpnkit'
-Environment=VMEXEC_PATH=/opt/wsl-vpnkit/wsl-vm
-Environment=GVPROXY_PATH=/opt/wsl-vpnkit/wsl-gvproxy.exe
-Restart=always
-KillMode=mixed
+5. **Enable and Start the Service**:
+   ```bash
+   sudo systemctl enable wsl-vpnkit
+   sudo systemctl start wsl-vpnkit
+   ```
 
-[Install]
-WantedBy=multi-user.target
-Enable and Start the Service:
+### Conclusion
 
-sudo systemctl enable wsl-vpnkit
-sudo systemctl start wsl-vpnkit
-Conclusion
-By following these steps, you can restore internet connectivity in your WSL2 environment while connected to a VPN on Windows. This solution leverages wsl-vpnkit to ensure seamless network integration between WSL2 and your VPN.
+By following these steps, you can restore internet connectivity in your WSL2 environment while connected to a VPN on Windows. This solution leverages `wsl-vpnkit` to ensure seamless network integration between WSL2 and your VPN.
