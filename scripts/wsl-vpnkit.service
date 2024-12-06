@@ -1,0 +1,14 @@
+[Unit]
+Description=wsl-vpnkit
+After=network.target
+
+[Service]
+Type=idle
+ExecStart=/bin/sh -c '. /etc/systemd/system/wsl-interop-env.sh; /opt/wsl-vpnkit/wsl-vpnkit'
+Environment=VMEXEC_PATH=/opt/wsl-vpnkit/wsl-vm
+Environment=GVPROXY_PATH=/opt/wsl-vpnkit/wsl-gvproxy.exe
+Restart=always
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
